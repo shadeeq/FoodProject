@@ -1,5 +1,6 @@
+"use strict";
 window.addEventListener('DOMContentLoaded', function() {
-
+   
     // Tabs
     
 	let tabs = document.querySelectorAll('.tabheader__item'),
@@ -42,17 +43,23 @@ window.addEventListener('DOMContentLoaded', function() {
     // Timer
     const timer = setInterval(setClock, 1000);
     setClock();
-    function setClock(deadline = "2021-07-06"){
+    function setClock(deadline = "2021-07-26"){
         const t = Date.parse(deadline) - Date.parse(new Date());
         const timer = document.querySelector('.timer');
-        timer.querySelector('#days').innerHTML = Math.floor((t / (1000*60*60*24)));
-        timer.querySelector('#hours').innerHTML = Math.floor((t / (1000*60*60)%24));
-        timer.querySelector('#minutes').innerHTML = Math.floor((t / (1000*60)% 60));
-        timer.querySelector('#seconds').innerHTML = Math.floor((t / 1000 % 60));
+        timer.querySelector('#days').innerHTML = addZero(Math.floor((t / (1000*60*60*24))));
+        timer.querySelector('#hours').innerHTML = addZero(Math.floor((t / (1000*60*60)%24)));
+        timer.querySelector('#minutes').innerHTML = addZero(Math.floor((t / (1000*60)% 60)));
+        timer.querySelector('#seconds').innerHTML = addZero(Math.floor((t / 1000 % 60)));
 
         if (t <= 0) {
             clearInterval(timer);
         }
+    }
+    function addZero(num) {
+        if (num > 0 && num < 10) {
+            num = `0${num}`;
+        }
+        return num;
     }
     /*const deadline = '2022-05-11';
 
@@ -232,10 +239,20 @@ window.addEventListener('DOMContentLoaded', function() {
     };
 
     forms.forEach(item => {
-        postData(item);
+        bindPostData(item);
     });
 
-    function postData(form) {
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data
+        });
+        return await res.json();
+    };
+    function bindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -248,19 +265,18 @@ window.addEventListener('DOMContentLoaded', function() {
             form.insertAdjacentElement('afterend', statusMessage);
         
             const formData = new FormData(form);
-
-            const object = {};
-            formData.forEach(function(value, key){
-                object[key] = value;
+            // Перебор formData для создания JSON объекта
+         /*   const obj = {};
+            formData.forEach((input, key) => {
+                obj[key] = input;
             });
-
-            fetch('server.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(object)
-            }).then(data => {
+            console.log(obj);
+            const json = JSON.stringify(obj);*/
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
+            
+            
+            postData('http://localhost:3000/requests', json)
+            .then(data => {
                 console.log(data);
                 showThanksModal(message.success);
                 statusMessage.remove();
@@ -294,4 +310,8 @@ window.addEventListener('DOMContentLoaded', function() {
             closeModal();
         }, 4000);
     }
+    
+    
+
+    
 });
