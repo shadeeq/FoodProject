@@ -40,7 +40,8 @@ window.addEventListener('DOMContentLoaded', function() {
 		}
     });
     
-    // Timer
+    //Timer
+
     const timer = setInterval(setClock, 1000);
     setClock();
     function setClock(deadline = "2021-07-26"){
@@ -61,6 +62,8 @@ window.addEventListener('DOMContentLoaded', function() {
         }
         return num;
     }
+    
+   
     /*const deadline = '2022-05-11';
 
     function getTimeRemaining(endtime) {
@@ -243,9 +246,9 @@ window.addEventListener('DOMContentLoaded', function() {
             `;
             document.querySelector(parent).append(div);
         });
-    }
-    
-    
+    }  
+
+   
     // Forms
 
     const forms = document.querySelectorAll('form');
@@ -342,14 +345,14 @@ window.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#total').textContent = addZero(slides.length);
 
     wrapper.addEventListener('click', (e) => {
-        if (e.target && e.target === prev) {
+        if (e.target.classList.contains('offer__slider-prev')) {
             current--;
             if (current < 1) {
                 current = slides.length;
             }
             document.querySelector('#current').textContent = addZero(current);
             showSlide(current-1);
-        } else if (e.target && e.target === next) {
+        } else if (e.target.classList.contains('offer__slider-next')) {
             current++;
             if (current > slides.length) {
                 current = 1;
@@ -370,41 +373,42 @@ window.addEventListener('DOMContentLoaded', function() {
    
     // Slider_2
     
-    // const slides = document.querySelectorAll('.offer__slide'),
-    // next = document.querySelector('.offer__slider-next'),
-    // prev = document.querySelector('.offer__slider-prev');
-    // let currentValue = 1;
-    // document.querySelector('#current').textContent = addZero(currentValue);
-    // document.querySelector('#total').textContent = addZero(slides.length);
-    // showSlide(currentValue);
-    // function showSlide(n) {
-    //    if (n < 1) {
-    //        currentValue = slides.length;
-    //    } else if (n > slides.length) {
-    //        currentValue = 1;
-    //    }
+    /* const slides = document.querySelectorAll('.offer__slide'),
+    next = document.querySelector('.offer__slider-next'),
+    prev = document.querySelector('.offer__slider-prev');
+    let currentValue = 1;
+    document.querySelector('#current').textContent = addZero(currentValue);
+    document.querySelector('#total').textContent = addZero(slides.length);
+    showSlide(currentValue);
+    function showSlide(n) {
+       if (n < 1) {
+           currentValue = slides.length;
+       } else if (n > slides.length) {
+           currentValue = 1;
+       }
 
-    //    slides.forEach(item => item.style.display = "none");
-    //    slides[currentValue-1].style.display = '';
-    //    document.querySelector('#current').textContent = addZero(currentValue);
-    // }
+       slides.forEach(item => item.style.display = "none");
+       slides[currentValue-1].style.display = '';
+       document.querySelector('#current').textContent = addZero(currentValue);
+    }
 
-    // function nextSlide(n) {
-    //     showSlide(currentValue += n);
-    // }
+    function nextSlide(n) {
+        showSlide(currentValue += n);
+    }
 
-    // next.addEventListener('click', () => {
-    //     nextSlide(1);
-    // });
-    // prev.addEventListener('click', () => {
-    //     nextSlide(-1);
-    // });
-
+    next.addEventListener('click', () => {
+        nextSlide(1);
+    });
+    prev.addEventListener('click', () => {
+        nextSlide(-1);
+    });
+ */
     // Animated Slider
 
     const slides = document.querySelectorAll('.offer__slide'),
         prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
+        slider = document.querySelector('.offer__slider'),
         total = document.querySelector('#total'),
         current = document.querySelector('#current'),
         slidesWrapper = document.querySelector('.offer__slider-wrapper'),
@@ -412,6 +416,50 @@ window.addEventListener('DOMContentLoaded', function() {
         width = window.getComputedStyle(slidesWrapper).width;
     let slideIndex = 1;
     let offset = 0;
+    
+    current.textContent = addZero(slideIndex);
+    total.textContent = addZero(slides.length);
+
+    slider.style.position = 'relative';
+
+    const indicators = document.createElement('ol');
+    indicators.classList.add('carousel-indicators');
+    indicators.style.cssText = `
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        margin-right: 15%;
+        margin-left: 15%;
+        list-style: none;
+    `;
+    slider.append(indicators);
+
+    for (let i=0; i < slides.length; i++) {
+        const li = document.createElement('li');
+        li.classList.add('dot');
+        li.style.cssText = `
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 6px;
+            margin-right: 3px;
+            margin-left: 3px;
+            cursor: pointer;
+            background-color: #fff;
+            background-clip: padding-box;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            opacity: .5;
+            transition: opacity .6s ease;
+        `;
+        indicators.append(li);
+    }
+
+    const dots = document.querySelectorAll('.dot');
 
     slidesField.style.width = 100 * slides.length + '%';
     slidesField.style.display = 'flex';
@@ -422,6 +470,7 @@ window.addEventListener('DOMContentLoaded', function() {
     slides.forEach(slide => {
         slide.style.width = width;
     });
+
     next.addEventListener('click', () => {
         if (offset === +width.slice(0, width.length - 2) * (slides.length - 1)) {
             offset = 0;
@@ -430,7 +479,12 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
         slidesField.style.transform = `translateX(-${offset}px)`;
+        slideIndex++;
+        slideIn(slideIndex);
+        switchDot(slideIndex);
+        
     });
+
     prev.addEventListener('click', () => {
         if (offset === 0) {
             offset = +width.slice(0, width.length -2) * (slides.length -1);
@@ -438,7 +492,40 @@ window.addEventListener('DOMContentLoaded', function() {
             offset -= +width.slice(0, width.length -2);
         }
         slidesField.style.transform = `translateX(-${offset}px)`;
+        slideIndex--;
+        slideIn(slideIndex);
+        switchDot(slideIndex);
     });
 
-        
+    function slideIn(n) {
+        if (n < 1) {
+            slideIndex = slides.length;
+        } else if (n > slides.length) {
+            slideIndex = 1;
+        }
+        current.textContent = addZero(slideIndex);
+    }
+    // Dots for slider
+    switchDot(slideIndex);
+
+    function switchDot(n) {
+        dots.forEach(dot => dot.style.opacity = '0.5');
+        dots[n-1].style.opacity = '1';
+    }
+
+    dots.forEach((dot,i) => {
+        dot.addEventListener('click', () => {
+            offset = cutWords(width) * i;
+            slidesField.style.transform = `translateX(-${offset}px)`;
+            switchDot(i+1);
+            current.textContent = addZero(i+1);
+            slideIndex = (i+1);
+        });
+    });
+
+    function cutWords(str) {
+        return str.replace(/\D/g, '');
+    }
+
+    
 });
